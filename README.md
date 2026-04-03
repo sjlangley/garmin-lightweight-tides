@@ -1,14 +1,15 @@
-# Garmin Tide App (Forerunner 245 Compatible)
+# Garmin Tide App (Forerunner 55 Compatible)
 
 ## Overview
 
-This project is a lightweight tide application built using Garmin Connect IQ, specifically designed to run on constrained devices like the Forerunner 245.
+This project is a lightweight tide application built using Garmin Connect IQ,
+specifically designed to run on constrained devices like the Forerunner 55.
 
 The goal is to provide:
 
 * Current tide status (high / low)
 * Next tide time
-* Simple visual indicator (optional)
+* A button-paged text table of cached high/low tides
 
 The app is intentionally minimal to stay within device limits.
 
@@ -16,7 +17,7 @@ The app is intentionally minimal to stay within device limits.
 
 ## Target Devices
 
-* Primary: Forerunner 245
+* Primary: Forerunner 55
 * Secondary: Other low-memory Connect IQ devices
 
 ---
@@ -36,12 +37,22 @@ The app is intentionally minimal to stay within device limits.
 
 ### Recommended Approach: Phone-Assisted API
 
-The watch app retrieves tide data via the paired phone.
+The watch app retrieves tide data via the paired phone, then stores a compact
+offline cache on-device.
 
 Options:
 
 * Public tide APIs (e.g. NOAA or equivalent)
 * Custom lightweight proxy (optional)
+
+Recommended MVP payload:
+
+* Selected station name
+* Cache timestamp
+* Up to 7 days of high/low tide events for that station
+* Events grouped by day for rendering
+* Each event should include only the minimum needed for rendering, such as
+  event type, event time, and optional level
 
 ---
 
@@ -88,9 +99,11 @@ connectiq
 
 ## Constraints (IMPORTANT)
 
-The Forerunner 245 has strict limits:
+The Forerunner 55 has strict limits:
 
 * Memory is limited
+* The screen is smaller at 208 x 208
+* The display is limited to 8 colors
 * No large datasets
 * Limited background processing
 * Network calls are restricted
@@ -104,8 +117,8 @@ Design accordingly.
 * [ ] Basic UI with current tide
 * [ ] Next high/low tide
 * [ ] Phone-assisted API integration
+* [ ] 7-day cached high/low tide table with button paging by day
 * [ ] Configurable location
-* [ ] Simple graph (if feasible)
 
 ---
 
@@ -114,6 +127,10 @@ Design accordingly.
 * Full tide charts
 * Offline global tide database
 * Complex animations
+
+The app should prefer text over visuals. If a feature needs a graph to make
+sense, it probably does not belong in the MVP.
+The Forerunner 55 MVP should assume button navigation first.
 
 ---
 
