@@ -1,7 +1,6 @@
 # Implementation Plan
 
 Generated on 2026-04-04
-Branch: codex/implementation-plan
 Status: DRAFT
 
 ## Delivery Principles
