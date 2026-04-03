@@ -2,7 +2,8 @@
 
 ## Purpose
 
-Guide AI agents (gstack, Codex, Claude, etc.) to build a Garmin Connect IQ tide app that works on constrained devices like the Forerunner 245.
+Guide AI agents (gstack, Codex, Claude, etc.) to build a Garmin Connect IQ
+tide app that works on constrained devices like the Forerunner 55.
 
 ---
 
@@ -23,6 +24,7 @@ Guide AI agents (gstack, Codex, Claude, etc.) to build a Garmin Connect IQ tide 
 
    * Prefer phone-assisted data
    * Do NOT assume direct internet access from watch
+   * Use GPS only as a one-shot station lookup trigger, not continuous tracking
 
 4. **UI must be simple**
 
@@ -56,8 +58,11 @@ Guide AI agents (gstack, Codex, Claude, etc.) to build a Garmin Connect IQ tide 
 ## Allowed Features
 
 * Display text (current tide, next tide)
+* Display a simple text list or table of upcoming high/low events
 * Simple shapes or indicators
 * Basic time calculations
+* Cache a small set of upcoming tide events for offline viewing
+* One-shot GPS lookup to resolve the nearest station when requested by the user
 
 ---
 
@@ -65,6 +70,7 @@ Guide AI agents (gstack, Codex, Claude, etc.) to build a Garmin Connect IQ tide 
 
 * Large embedded JSON or datasets
 * Continuous background processing
+* Continuous GPS tracking for station resolution
 * Complex charting libraries
 * Overly dynamic UI rendering
 
@@ -83,6 +89,7 @@ Guide AI agents (gstack, Codex, Claude, etc.) to build a Garmin Connect IQ tide 
 1. Start with a static mock tide display
 2. Add dynamic time updates
 3. Integrate data source (API or phone)
+4. Cache up to 7 days of high/low events for the selected station
 4. Optimize for memory and performance
 
 ---
@@ -96,7 +103,7 @@ Guide AI agents (gstack, Codex, Claude, etc.) to build a Garmin Connect IQ tide 
 
 ## Success Criteria
 
-* App runs without crashing on Forerunner 245
+* App runs without crashing on Forerunner 55
 * Memory usage stays within limits
 * UI remains responsive
 
