@@ -159,6 +159,13 @@ The product structure should be explicit:
 1. Daily table screen: highs and lows with times and levels for one selected day
 1. Day navigation: `UP` and `DOWN`
 
+The trust model should also be explicit:
+
+1. Always label the active station on screen
+1. Always label whether the station is `Home` or `Nearest`
+1. Always show cache freshness on the summary screen
+1. Never silently replace the home station label with a nearest-station result
+
 That wedge is small enough to ship, small enough to test on low-memory devices,
 and strong enough to show people. It also gives you a clean upgrade path:
 
@@ -178,10 +185,82 @@ and strong enough to show people. It also gives you a clean upgrade path:
 - Do you want direct `makeWebRequest()` from the watch as the first network
   path, or a true phone companion from day one?
 - How stale can cached data be before the UI should show a warning?
-- Should a nearest-station lookup temporarily override the home station, or ask
-  the user whether to save it as the new default?
 - Is this meant to stay personal and minimal, or do you eventually want Connect
   IQ Store distribution for other users?
+
+## Interaction States
+
+The plan must define the non-happy path, not just the success path.
+
+- `Loading`
+  Show `Loading tides...` and keep the screen static.
+- `Fresh cache`
+  Show normal summary UI with `Updated <time ago>`.
+- `Stale cache`
+  Show cached data with an obvious stale label such as `Updated 2d ago`.
+- `No cache`
+  Show station label if known, plus `No cached tides yet`.
+- `GPS locating`
+  Show `Finding location...` and prevent repeated trigger spam.
+- `GPS denied`
+  Show `Location permission required`.
+- `GPS timeout`
+  Show `Couldn't get GPS fix`.
+- `Nearest station found`
+  Show `Nearest: <station>` and refresh both summary and daily table.
+- `No nearby station`
+  Show `No nearby station found`.
+- `Phone/network unavailable`
+  Keep existing cache visible and show a short refresh failure message.
+
+Every failure state should leave the user with a clear next move:
+
+- wait
+- retry
+- go back
+- use existing cached data
+
+## Controls
+
+The button map should be fixed in the plan before implementation:
+
+- `START`
+  Open the day table from the summary screen.
+- `UP`
+  Move to the previous cached day in the table view.
+- `DOWN`
+  Move to the next cached day in the table view.
+- `BACK`
+  Return from day table to summary, or cancel an in-progress secondary action.
+- `START` from summary on a focused action row
+  Trigger `Use Current Location`.
+
+The summary screen should stay shallow. No deep menu tree for MVP.
+
+## Layout Rules
+
+The 208 x 208 screen needs explicit density constraints:
+
+- Summary screen shows at most 4 informational rows:
+  station label, current state, next tide, cache freshness
+- Day table shows one day only
+- Day table should target 4 visible event rows max before requiring paging to a
+  different day
+- Station names should truncate rather than wrap if they exceed the row width
+- Tide rows should use compact text, such as `6:42 PM H 1.8m`
+- Time, type, and level must fit on one line
+- Color should never be the only indicator of `High` vs `Low`
+
+## Copy Rules
+
+The copy should be short, plain, and glanceable:
+
+- `Home: Manly`
+- `Nearest: Byron Bay`
+- `Next high 6:42 PM`
+- `Updated 3h ago`
+- `No cached tides yet`
+- `Couldn't get GPS fix`
 
 ## Success Criteria
 
@@ -193,6 +272,7 @@ and strong enough to show people. It also gives you a clean upgrade path:
 - Supports moving day by day with watch buttons.
 - Can resolve a nearest station from a one-shot GPS request without storing a
   station database on-watch.
+- Covers loading, stale, no-cache, GPS-failure, and refresh-failure states.
 - Uses small, boring data structures.
 - Avoids crashes, loops, and complex redraw behavior.
 - Stays readable without relying on rich color cues.
@@ -230,8 +310,10 @@ CI/CD:
 1. Add a text-only per-day table model for cached high/low events.
 1. Add time-based refresh of the displayed clock text only, not tide
    recomputation.
+1. Define all UI states in code before wiring the live fetch path.
+1. Define a fixed button map before adding secondary actions.
 1. Add `TideService.mc` with a stubbed response shape matching the final compact
-    payload.
+     payload.
 1. Validate on the Forerunner 55 simulator before adding any network code.
 1. Add the first real fetch path using a phone-selected home station and a
    minimal response.
@@ -240,6 +322,7 @@ CI/CD:
 1. Map `UP` and `DOWN` to previous and next day navigation.
 1. Add an explicit one-shot "use current location" action that acquires GPS once
    and refreshes the cache for the nearest station.
+1. Make `Home` versus `Nearest` labeling explicit on every rendered screen.
 1. Add cache and stale-state UI before adding more features.
 
 ## What I noticed about how you think
