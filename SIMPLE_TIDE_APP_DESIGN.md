@@ -37,11 +37,10 @@ light.
 
 You tap it and immediately get a clean answer:
 
-- `Rising`
-- `Next high 6:42 PM`
 - `Home: Manly`
-- `Today: 6:42 PM H, 12:51 AM L`
-- `Updated 3h ago`
+- `Rising`
+- `Next high 6:42 PM 1.23M`
+- `Today: 6:42 PM H 1.23M, 12:51 AM L 0.2M`
 
 That is the whole game. It feels native, fast, and trustworthy on a device
 that punishes bloat.
