@@ -89,6 +89,10 @@ Recommended MVP station flow:
 * Visual Studio Code + Connect IQ extension
 * Java (for SDK tools)
 
+See [LOCAL_DEVELOPMENT_SETUP.md](LOCAL_DEVELOPMENT_SETUP.md) for the full local
+setup guide, including the SDK Manager, VS Code extension, simulator, and
+Forerunner 55 testing workflow.
+
 ---
 
 ## Build
@@ -149,5 +153,8 @@ The Forerunner 55 MVP should assume button navigation first.
 
 This project prioritizes compatibility over feature richness.
 If something feels “too heavy”, it probably is.
+
+See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the phased delivery
+plan, PR boundaries, and quality gates.
 
 ---
