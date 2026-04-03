@@ -12,6 +12,11 @@ Build a tide app that is actually usable on small Garmin watches like the
 Forerunner 55, instead of building a "tide platform" that dies on memory,
 networking, or UI complexity.
 
+The sharp user wedge is not "everyone who cares about tides." It is a person
+who checks one local spot often, wants trusted offline tide info on a cheap
+button-driven watch, and occasionally needs a fast way to switch to the nearest
+station when traveling.
+
 The user job is tiny and urgent:
 
 - Open the app.
@@ -19,6 +24,7 @@ The user job is tiny and urgent:
 - See the next high or low tide time.
 - See the next several high/low events even if the phone is not nearby.
 - Use watch buttons to move between cached days.
+- Optionally refresh to the nearest station when the user is somewhere new.
 - Get out.
 
 If it takes multiple screens, a chart, or heavy processing, the product has
@@ -35,6 +41,7 @@ You tap it and immediately get a clean answer:
 - `Next high 6:42 PM`
 - `Home: Manly`
 - `Today: 6:42 PM H, 12:51 AM L`
+- `Updated 3h ago`
 
 That is the whole game. It feels native, fast, and trustworthy on a device
 that punishes bloat.
@@ -47,10 +54,11 @@ that punishes bloat.
 - Memory is tight, so no embedded tide tables or large station catalogs.
 - UI must stay single-screen, high-contrast, and cheap to redraw.
 - Navigation should assume button input first on the Forerunner 55.
+- GPS should be one-shot only and only when the user explicitly requests it.
 - Networking is limited and should not assume direct internet from the watch.
 - Business logic should live off-watch where possible.
-- The first version should work with one station or one saved location, not a
-  browse-the-world experience.
+- The first version should work with one phone-selected home station plus an
+  explicit "use current location" override, not a browse-the-world experience.
 - Offline usefulness matters, so the app should cache upcoming tide events on
   the watch after a successful fetch.
 
@@ -58,13 +66,17 @@ that punishes bloat.
 
 1. The thin-client architecture is non-negotiable.
 1. The first useful version is "current state plus next event," not a chart.
-1. Location selection should happen off-watch or be fixed in v1.
+1. Home-station selection should happen on the phone in v1.
+1. Current-location station selection should be an explicit one-shot GPS action,
+   not passive background behavior.
 1. A tiny cached payload from a phone companion or phone-assisted request is
    better than any on-watch prediction logic.
 1. Caching up to 7 days of high/low events for one selected station is small
    enough to be treated as cheap, if the payload stays minimal.
 1. Daily views should render a variable number of events, not assume exactly
    two highs and two lows every day.
+1. Tide level is part of the MVP event shape, not an optional extra.
+1. Cache freshness must be visible to the user.
 1. The right success metric is "opens fast, reads clearly, and never crashes on
    a 55," not
    feature count.
@@ -99,12 +111,13 @@ The watch stores only a tiny payload, something conceptually like:
 
 ```text
 stationName
+stationMode => {home | nearest}
 lastUpdated
 currentState
 nextEventType
 nextEventTime
 days[0..6] => {date, events[]}
-events[] => {time, type, optionalLevel}
+events[] => {time, type, level}
 ```
 
 Why it wins:
@@ -112,6 +125,7 @@ Why it wins:
 - Matches the "thin client" rule in the repo.
 - Keeps data size and parsing cost tiny.
 - Makes the app useful when the phone is unavailable between refreshes.
+- Preserves the thin-client model even when the user is traveling.
 - Makes simulator and real-device testing honest.
 - Leaves room for a later widget-like entry point after the core flow works,
   but the app screen must stand on its own first.
@@ -126,6 +140,7 @@ charting app and not a location browser.
 The wedge is:
 
 - one saved station
+- one optional nearest-station override
 - one screen
 - one fetch path
 - one fallback cache
@@ -138,6 +153,12 @@ The app should answer two questions well:
 1. What is the tide doing right now?
 1. What are the next upcoming highs and lows if I lose phone connectivity?
 
+The product structure should be explicit:
+
+1. Summary screen: station name, current state, next tide, stale-data label
+1. Daily table screen: highs and lows with times and levels for one selected day
+1. Day navigation: `UP` and `DOWN`
+
 That wedge is small enough to ship, small enough to test on low-memory devices,
 and strong enough to show people. It also gives you a clean upgrade path:
 
@@ -145,7 +166,8 @@ and strong enough to show people. It also gives you a clean upgrade path:
 1. Live clock updates
 1. Tide snapshot fetch
 1. Persist 7-day high/low cache
-1. Saved station setting
+1. Phone-selected home station
+1. One-shot GPS nearest-station action
 1. Button-paged day navigation
 1. Optional lightweight widget-like surface later
 
@@ -155,9 +177,9 @@ and strong enough to show people. It also gives you a clean upgrade path:
   proxy that can normalize multiple sources?
 - Do you want direct `makeWebRequest()` from the watch as the first network
   path, or a true phone companion from day one?
-- Should v1 support exactly one saved station, or one "current location" plus
-  one saved station?
 - How stale can cached data be before the UI should show a warning?
+- Should a nearest-station lookup temporarily override the home station, or ask
+  the user whether to save it as the new default?
 - Is this meant to stay personal and minimal, or do you eventually want Connect
   IQ Store distribution for other users?
 
@@ -169,6 +191,8 @@ and strong enough to show people. It also gives you a clean upgrade path:
 - Works with missing network by showing the last cached tide snapshot.
 - Can display cached upcoming high/low events for up to 7 days.
 - Supports moving day by day with watch buttons.
+- Can resolve a nearest station from a one-shot GPS request without storing a
+  station database on-watch.
 - Uses small, boring data structures.
 - Avoids crashes, loops, and complex redraw behavior.
 - Stays readable without relying on rich color cues.
@@ -200,7 +224,7 @@ CI/CD:
 ## Next Steps
 
 1. Create the smallest possible static UI in `App.mc` and `View.mc`.
-1. Show station name, current state, and next tide first.
+1. Show station name, current state, next tide, and cache freshness first.
 1. Design the layout for 208 x 208 first, not as a shrunk-down 240 x 240 UI.
 1. Add a tiny in-memory model for a mocked tide snapshot.
 1. Add a text-only per-day table model for cached high/low events.
@@ -209,9 +233,13 @@ CI/CD:
 1. Add `TideService.mc` with a stubbed response shape matching the final compact
     payload.
 1. Validate on the Forerunner 55 simulator before adding any network code.
-1. Add the first real fetch path using a single station and a minimal response.
+1. Add the first real fetch path using a phone-selected home station and a
+   minimal response.
 1. Persist up to 7 days of high/low events for offline use.
+1. Make tide level mandatory in the cached event shape.
 1. Map `UP` and `DOWN` to previous and next day navigation.
+1. Add an explicit one-shot "use current location" action that acquires GPS once
+   and refreshes the cache for the nearest station.
 1. Add cache and stale-state UI before adding more features.
 
 ## What I noticed about how you think

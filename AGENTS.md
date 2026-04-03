@@ -24,6 +24,7 @@ tide app that works on constrained devices like the Forerunner 55.
 
    * Prefer phone-assisted data
    * Do NOT assume direct internet access from watch
+   * Use GPS only as a one-shot station lookup trigger, not continuous tracking
 
 4. **UI must be simple**
 
@@ -61,6 +62,7 @@ tide app that works on constrained devices like the Forerunner 55.
 * Simple shapes or indicators
 * Basic time calculations
 * Cache a small set of upcoming tide events for offline viewing
+* One-shot GPS lookup to resolve the nearest station when requested by the user
 
 ---
 
@@ -68,6 +70,7 @@ tide app that works on constrained devices like the Forerunner 55.
 
 * Large embedded JSON or datasets
 * Continuous background processing
+* Continuous GPS tracking for station resolution
 * Complex charting libraries
 * Overly dynamic UI rendering
 

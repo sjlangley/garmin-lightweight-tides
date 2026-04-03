@@ -10,6 +10,7 @@ The goal is to provide:
 * Current tide status (high / low)
 * Next tide time
 * A button-paged text table of cached high/low tides
+* A one-shot "use current location" option to resolve the nearest station
 
 The app is intentionally minimal to stay within device limits.
 
@@ -29,6 +30,7 @@ The app is intentionally minimal to stay within device limits.
 * Keep the watch app extremely lightweight
 * Avoid large embedded datasets
 * Prefer phone-assisted data retrieval
+* Use GPS only on demand
 * Minimize memory and CPU usage
 
 ---
@@ -51,8 +53,16 @@ Recommended MVP payload:
 * Cache timestamp
 * Up to 7 days of high/low tide events for that station
 * Events grouped by day for rendering
-* Each event should include only the minimum needed for rendering, such as
-  event type, event time, and optional level
+* Each event should include only the minimum needed for rendering: event type,
+  event time, and level
+
+Recommended MVP station flow:
+
+* Default station is selected on the phone
+* The watch may offer a one-shot "use current location" action
+* The watch gets a GPS fix once, sends coordinates through the thin-client flow,
+  and receives the nearest station plus a fresh 7-day cache
+* The app should never store a large station catalog on-watch
 
 ---
 
@@ -118,7 +128,8 @@ Design accordingly.
 * [ ] Next high/low tide
 * [ ] Phone-assisted API integration
 * [ ] 7-day cached high/low tide table with button paging by day
-* [ ] Configurable location
+* [ ] Phone-selected home station
+* [ ] One-shot GPS nearest-station lookup
 
 ---
 
